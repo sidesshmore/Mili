@@ -87,6 +87,57 @@ class ChatStorageService {
     }
   }
 
+  // NEW METHOD: Get recent context for AI (20 messages with 70% user, 30% AI)
+  static Future<List<ChatMessage>> getRecentContextForAI() async {
+    try {
+      final userId = await _getCurrentUserId();
+      if (userId == null) {
+        log('No user ID found for context');
+        return [];
+      }
+
+      if (_box == null) {
+        await init();
+      }
+
+      // Get all messages for current user, sorted by timestamp (newest first for context)
+      final allMessages = _box!.values
+          .where((message) => message.userId == userId)
+          .toList();
+
+      allMessages.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+
+      if (allMessages.isEmpty) {
+        return [];
+      }
+
+      // Separate user and AI messages
+      final userMessages = allMessages.where((m) => m.isUser).toList();
+      final aiMessages = allMessages.where((m) => !m.isUser).toList();
+
+      // Calculate how many messages we want (70% user, 30% AI, max 20 total)
+      const maxContextMessages = 20;
+      final targetUserMessages = (maxContextMessages * 0.7).round();
+      final targetAiMessages = (maxContextMessages * 0.3).round();
+
+      // Take the most recent messages according to our ratio
+      final recentUserMessages = userMessages.take(targetUserMessages).toList();
+      final recentAiMessages = aiMessages.take(targetAiMessages).toList();
+
+      // Combine and sort by timestamp (oldest first for proper context)
+      final contextMessages = [...recentUserMessages, ...recentAiMessages];
+      contextMessages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+
+      log(
+        'Retrieved ${contextMessages.length} messages for AI context (${recentUserMessages.length} user, ${recentAiMessages.length} AI)',
+      );
+      return contextMessages;
+    } catch (e) {
+      log('Error getting context messages: $e');
+      return [];
+    }
+  }
+
   // Get all messages for a specific user
   static Future<List<ChatMessage>> getMessagesForUser(String userId) async {
     try {

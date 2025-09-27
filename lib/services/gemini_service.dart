@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'dart:developer';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:mindmate/services/chat_storage_service.dart';
+import 'package:mindmate/models/chat_message.dart';
 
 class GeminiService {
   static const String _baseUrl =
@@ -17,8 +19,14 @@ class GeminiService {
 
   Future<String> generateResponse(String message) async {
     try {
-      // Create a mental health focused prompt
-      final enhancedPrompt = _createMentalHealthPrompt(message);
+      // Get recent context from storage
+      final contextMessages = await ChatStorageService.getRecentContextForAI();
+
+      // Create a mental health focused prompt with context
+      final enhancedPrompt = await _createMentalHealthPromptWithContext(
+        message,
+        contextMessages,
+      );
 
       final response = await http.post(
         Uri.parse(_baseUrl),
@@ -88,6 +96,49 @@ class GeminiService {
       log('Error calling Gemini API: $e');
       return 'I\'m experiencing some technical difficulties. Please try again.';
     }
+  }
+
+  Future<String> _createMentalHealthPromptWithContext(
+    String userMessage,
+    List<ChatMessage> contextMessages,
+  ) async {
+    final StringBuffer contextBuilder = StringBuffer();
+
+    // Build conversation history if available
+    if (contextMessages.isNotEmpty) {
+      contextBuilder.writeln(
+        'Previous conversation context (recent messages):',
+      );
+      for (final msg in contextMessages) {
+        final speaker = msg.isUser ? 'User' : 'MindMate';
+        // Truncate very long messages to keep within token limits
+        final truncatedText = msg.text.length > 200
+            ? '${msg.text.substring(0, 200)}...'
+            : msg.text;
+        contextBuilder.writeln('$speaker: $truncatedText');
+      }
+      contextBuilder.writeln('\n---\n');
+    }
+
+    return '''
+You are MindMate, a compassionate AI companion focused on mental health and wellness. You provide supportive, empathetic responses while maintaining appropriate boundaries.
+
+Guidelines for your responses:
+- Be warm, empathetic, and non-judgmental
+- Use active listening techniques
+- Provide practical coping strategies when appropriate
+- Encourage professional help for serious concerns
+- Keep responses concise but meaningful (2-4 sentences)
+- Use emojis sparingly and appropriately
+- Never diagnose or provide medical advice
+- If the user expresses suicidal thoughts or self-harm, encourage them to seek immediate professional help
+- Consider the conversation history to provide contextually relevant responses
+- Reference previous topics when appropriate to show continuity and understanding
+
+${contextBuilder.toString()}Current user message: "$userMessage"
+
+Respond as MindMate with care and understanding, taking into account the conversation history:
+''';
   }
 
   String _createMentalHealthPrompt(String userMessage) {
