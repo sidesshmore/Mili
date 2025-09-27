@@ -5,6 +5,7 @@ import 'package:mindmate/features/Home/widgets/textInput.dart';
 import 'package:mindmate/features/Home/widgets/waveAnimation.dart';
 import 'package:mindmate/models/chat_message.dart';
 import 'package:mindmate/services/chat_storage_service.dart';
+import 'package:mindmate/services/chat_summary_service.dart';
 import 'package:mindmate/services/gemini_service.dart';
 import 'dart:developer';
 
@@ -44,11 +45,17 @@ class _HomeScreenState extends State<HomeScreen> {
       final savedMessages =
           await ChatStorageService.getMessagesForCurrentUser();
 
+      // log(
+      //   'Loaded messages from Hive: ${savedMessages.map((m) => '[${m.timestamp}] ${m.isUser ? 'User' : 'AI'}: ${m.text}').join('\n')}',
+      // );
+
       setState(() {
         _messages.clear();
         _messages.addAll(savedMessages);
         _isInitialized = true;
       });
+
+      await ChatSummaryService.checkAndGenerateSummaries();
 
       // Add welcome message only if no previous messages exist
       if (_messages.isEmpty) {
@@ -155,6 +162,8 @@ class _HomeScreenState extends State<HomeScreen> {
       final response = await _geminiService.generateResponse(message);
       _addMessage(response, false);
 
+      await ChatSummaryService.checkAndGenerateSummaries();
+
       // Log context info for debugging
       final contextMessages = await ChatStorageService.getRecentContextForAI();
       log('Sent context of ${contextMessages.length} messages to Gemini');
@@ -169,6 +178,22 @@ class _HomeScreenState extends State<HomeScreen> {
         _isLoading = false;
       });
     }
+  }
+
+  Future<void> _showSummaryStats() async {
+    final stats = await ChatSummaryService.getSummaryStats();
+    log('Summary Stats: $stats');
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Summaries: ${stats['totalSummaries']}, '
+          'Messages: ${stats['currentMessageCount']}, '
+          'Next at: ${stats['nextSummaryAt']}',
+        ),
+        duration: const Duration(seconds: 3),
+      ),
+    );
   }
 
   void _handleTextSubmit(String text) {
