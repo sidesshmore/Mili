@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mindmate/features/BottomNav/ui/bottomNavbar.dart';
@@ -9,9 +11,17 @@ import 'package:mindmate/features/Home/ui/homeScreen.dart';
 import 'package:mindmate/features/Onboarding/ui/onboarding-1.dart';
 import 'package:mindmate/services/auth_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:mindmate/services/chat_storage_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Initialize Hive storage
+  try {
+    await ChatStorageService.init();
+    log('Hive storage initialized successfully');
+  } catch (e) {
+    log('Error initializing Hive storage: $e');
+  }
 
   // Load environment variables
   await dotenv.load(fileName: ".env");

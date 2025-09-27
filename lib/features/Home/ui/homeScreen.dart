@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:mindmate/constants.dart';
 import 'package:mindmate/features/Home/widgets/micInput.dart';
 import 'package:mindmate/features/Home/widgets/textInput.dart';
+import 'package:mindmate/models/chat_message.dart';
+import 'package:mindmate/services/chat_storage_service.dart';
 import 'package:mindmate/services/gemini_service.dart';
+import 'dart:developer';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -20,12 +23,52 @@ class _HomeScreenState extends State<HomeScreen> {
 
   bool _isLoading = false;
   bool _hasText = false;
+  bool _isInitialized = false;
 
   @override
   void initState() {
     super.initState();
-    _addWelcomeMessage();
+    _initializeChat();
     _textController.addListener(_onTextChanged);
+  }
+
+  // Initialize chat storage and load previous messages
+  Future<void> _initializeChat() async {
+    try {
+      // Initialize Hive storage
+      await ChatStorageService.init();
+
+      // Load previous messages for the current user
+      final savedMessages =
+          await ChatStorageService.getMessagesForCurrentUser();
+
+      setState(() {
+        _messages.clear();
+        _messages.addAll(savedMessages);
+        _isInitialized = true;
+      });
+
+      // Add welcome message only if no previous messages exist
+      if (_messages.isEmpty) {
+        _addWelcomeMessage();
+      }
+
+      // Scroll to bottom after loading messages
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scrollToBottom();
+      });
+
+      // Log storage info
+      final storageInfo = await ChatStorageService.getStorageInfo();
+      log('Chat initialized - Storage info: $storageInfo');
+    } catch (e) {
+      log('Error initializing chat: $e');
+      setState(() {
+        _isInitialized = true;
+      });
+      // Still add welcome message if initialization fails
+      _addWelcomeMessage();
+    }
   }
 
   void _onTextChanged() {
@@ -35,24 +78,46 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _addWelcomeMessage() {
+    final welcomeMessage = ChatMessage(
+      text: "Hi there! 👋 I'm your MindMate. How are you feeling today?",
+      isUser: false,
+      timestamp: DateTime.now(),
+      userId: '', // Will be set when saving
+    );
+
     setState(() {
-      _messages.add(
-        ChatMessage(
-          text: "Hi there! 👋 I'm your MindMate. How are you feeling today?",
-          isUser: false,
-          timestamp: DateTime.now(),
-        ),
-      );
+      _messages.add(welcomeMessage);
     });
+
+    // Save welcome message to storage
+    _saveMessageToStorage(welcomeMessage);
   }
 
   void _addMessage(String text, bool isUser) {
+    final message = ChatMessage(
+      text: text,
+      isUser: isUser,
+      timestamp: DateTime.now(),
+      userId: '', // Will be set when saving
+    );
+
     setState(() {
-      _messages.add(
-        ChatMessage(text: text, isUser: isUser, timestamp: DateTime.now()),
-      );
+      _messages.add(message);
     });
+
+    // Save message to storage
+    _saveMessageToStorage(message);
+
     _scrollToBottom();
+  }
+
+  // Save message to Hive storage
+  Future<void> _saveMessageToStorage(ChatMessage message) async {
+    try {
+      await ChatStorageService.saveMessage(message);
+    } catch (e) {
+      log('Error saving message to storage: $e');
+    }
   }
 
   void _scrollToBottom() {
@@ -75,6 +140,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
     // Clear text field
     _textController.clear();
+    setState(() {
+      _hasText = false;
+    });
 
     setState(() {
       _isLoading = true;
@@ -111,10 +179,67 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  // Clear chat history
+  Future<void> _clearChatHistory() async {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Clear Chat History'),
+          content: const Text(
+            'Are you sure you want to clear all your chat history? This action cannot be undone.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.pop(context);
+                try {
+                  await ChatStorageService.clearMessagesForCurrentUser();
+                  setState(() {
+                    _messages.clear();
+                  });
+                  _addWelcomeMessage();
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Chat history cleared successfully'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Error clearing chat history: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: const Text('Clear', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // Initialize Globals for this context
     Globals.initialize(context);
+
+    // Show loading indicator if not initialized
+    if (!_isInitialized) {
+      return Scaffold(
+        backgroundColor: Colors.grey[50],
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
@@ -126,23 +251,57 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: EdgeInsets.all(Globals.screenWidth * 0.04),
               child: Column(
                 children: [
-                  Text(
-                    'MindMate Chat',
-                    style: TextStyle(
-                      fontSize: Globals.screenWidth * 0.06,
-                      fontWeight: FontWeight.w700,
-                      color: Globals.customBlue,
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'MindMate Chat',
+                              style: TextStyle(
+                                fontSize: Globals.screenWidth * 0.06,
+                                fontWeight: FontWeight.w700,
+                                color: Globals.customBlue,
+                              ),
+                            ),
+                            SizedBox(height: Globals.screenHeight * 0.005),
+                            Text(
+                              'Your AI companion for mental wellness',
+                              style: TextStyle(
+                                fontSize: Globals.screenWidth * 0.035,
+                                color: Colors.grey[600],
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Clear chat button
+                      IconButton(
+                        onPressed: _clearChatHistory,
+                        icon: Icon(
+                          Icons.delete_outline,
+                          color: Colors.grey[600],
+                          size: Globals.screenWidth * 0.06,
+                        ),
+                        tooltip: 'Clear Chat History',
+                      ),
+                    ],
                   ),
-                  SizedBox(height: Globals.screenHeight * 0.005),
-                  Text(
-                    'Your AI companion for mental wellness',
-                    style: TextStyle(
-                      fontSize: Globals.screenWidth * 0.035,
-                      color: Colors.grey[600],
-                      fontWeight: FontWeight.w400,
+                  // Message count indicator
+                  if (_messages.isNotEmpty)
+                    Container(
+                      margin: EdgeInsets.only(top: Globals.screenHeight * 0.01),
+                      child: Text(
+                        '${_messages.length} messages',
+                        style: TextStyle(
+                          fontSize: Globals.screenWidth * 0.03,
+                          color: Colors.grey[500],
+                        ),
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),
@@ -171,7 +330,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       }
 
                       final message = _messages[index];
-                      return _buildMessageBubble(message);
+                      return _buildMessageBubble(message, index);
                     },
                   ),
                 ),
@@ -239,7 +398,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   SizedBox(width: Globals.screenWidth * 0.02),
 
                   // Send/Mic Button
-                  // Send/Mic Button - Replace existing section with this
                   GestureDetector(
                     onTap: () {
                       if (_hasText) {
@@ -280,66 +438,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _showMicInputModal() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      isDismissible: true,
-      enableDrag: true,
-      builder: (context) => Container(
-        padding: EdgeInsets.all(Globals.screenWidth * 0.04),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
-          ),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Handle bar
-            Container(
-              width: Globals.screenWidth * 0.1,
-              height: 4,
-              margin: EdgeInsets.only(bottom: Globals.screenHeight * 0.02),
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-
-            // Title
-            Text(
-              'Voice Message',
-              style: TextStyle(
-                fontSize: Globals.screenWidth * 0.05,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
-            ),
-
-            SizedBox(height: Globals.screenHeight * 0.02),
-
-            // Mic Input Widget
-            MicInput(
-              onTranscription: (text) {
-                Navigator.pop(context);
-                if (text.isNotEmpty) {
-                  _handleMicInput(text);
-                }
-              },
-            ),
-
-            SizedBox(height: Globals.screenHeight * 0.02),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMessageBubble(ChatMessage message) {
+  Widget _buildMessageBubble(ChatMessage message, int index) {
     return Container(
       margin: EdgeInsets.only(
         bottom: Globals.screenHeight * 0.01,
@@ -350,49 +449,114 @@ class _HomeScreenState extends State<HomeScreen> {
         alignment: message.isUser
             ? Alignment.centerRight
             : Alignment.centerLeft,
-        child: Container(
-          padding: EdgeInsets.symmetric(
-            horizontal: Globals.screenWidth * 0.04,
-            vertical: Globals.screenHeight * 0.015,
-          ),
-          decoration: BoxDecoration(
-            color: message.isUser ? Globals.customBlue : Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.1),
-                spreadRadius: 1,
-                blurRadius: 3,
-                offset: const Offset(0, 1),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                message.text,
-                style: TextStyle(
-                  color: message.isUser ? Colors.white : Colors.black87,
-                  fontSize: Globals.screenWidth * 0.04,
-                  fontWeight: FontWeight.w400,
+        child: GestureDetector(
+          onLongPress: () => _showMessageOptions(message, index),
+          child: Container(
+            padding: EdgeInsets.symmetric(
+              horizontal: Globals.screenWidth * 0.04,
+              vertical: Globals.screenHeight * 0.015,
+            ),
+            decoration: BoxDecoration(
+              color: message.isUser ? Globals.customBlue : Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.1),
+                  spreadRadius: 1,
+                  blurRadius: 3,
+                  offset: const Offset(0, 1),
                 ),
-              ),
-              SizedBox(height: Globals.screenHeight * 0.005),
-              Text(
-                _formatTime(message.timestamp),
-                style: TextStyle(
-                  color: message.isUser
-                      ? Colors.white.withOpacity(0.7)
-                      : Colors.grey[500],
-                  fontSize: Globals.screenWidth * 0.03,
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  message.text,
+                  style: TextStyle(
+                    color: message.isUser ? Colors.white : Colors.black87,
+                    fontSize: Globals.screenWidth * 0.04,
+                    fontWeight: FontWeight.w400,
+                  ),
                 ),
-              ),
-            ],
+                SizedBox(height: Globals.screenHeight * 0.005),
+                Text(
+                  _formatTime(message.timestamp),
+                  style: TextStyle(
+                    color: message.isUser
+                        ? Colors.white.withOpacity(0.7)
+                        : Colors.grey[500],
+                    fontSize: Globals.screenWidth * 0.03,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
+  }
+
+  void _showMessageOptions(ChatMessage message, int index) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Container(
+        padding: EdgeInsets.all(Globals.screenWidth * 0.04),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.copy),
+              title: const Text('Copy Message'),
+              onTap: () {
+                Navigator.pop(context);
+                // Implement copy to clipboard functionality
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Message copied to clipboard')),
+                );
+              },
+            ),
+            if (message.isUser)
+              ListTile(
+                leading: const Icon(Icons.delete, color: Colors.red),
+                title: const Text(
+                  'Delete Message',
+                  style: TextStyle(color: Colors.red),
+                ),
+                onTap: () async {
+                  Navigator.pop(context);
+                  await _deleteMessage(index);
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _deleteMessage(int index) async {
+    try {
+      await ChatStorageService.deleteMessage(index);
+      setState(() {
+        _messages.removeAt(index);
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Message deleted'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error deleting message: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   Widget _buildTypingIndicator() {
@@ -458,16 +622,4 @@ class _HomeScreenState extends State<HomeScreen> {
     _textFocusNode.dispose();
     super.dispose();
   }
-}
-
-class ChatMessage {
-  final String text;
-  final bool isUser;
-  final DateTime timestamp;
-
-  ChatMessage({
-    required this.text,
-    required this.isUser,
-    required this.timestamp,
-  });
 }
