@@ -149,10 +149,15 @@ class _HomeScreenState extends State<HomeScreen> {
     });
 
     try {
-      // Get AI response from Gemini
+      // Get AI response from Gemini (now includes context automatically)
       final response = await _geminiService.generateResponse(message);
       _addMessage(response, false);
+
+      // Log context info for debugging
+      final contextMessages = await ChatStorageService.getRecentContextForAI();
+      log('Sent context of ${contextMessages.length} messages to Gemini');
     } catch (e) {
+      log('Error generating AI response: $e');
       _addMessage(
         "Sorry, I'm having trouble right now. Please try again.",
         false,
@@ -173,10 +178,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _dismissKeyboard() {
-    // Only dismiss if the text field is not actively focused
-    if (!_textFocusNode.hasFocus) {
-      FocusScope.of(context).unfocus();
-    }
+    FocusScope.of(context).unfocus();
   }
 
   // Clear chat history
@@ -242,70 +244,11 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     return Scaffold(
+      appBar: AppBar(title: Text('MindMate')),
       backgroundColor: Colors.grey[50],
       body: SafeArea(
         child: Column(
           children: [
-            // Header
-            Container(
-              padding: EdgeInsets.all(Globals.screenWidth * 0.04),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'MindMate Chat',
-                              style: TextStyle(
-                                fontSize: Globals.screenWidth * 0.06,
-                                fontWeight: FontWeight.w700,
-                                color: Globals.customBlue,
-                              ),
-                            ),
-                            SizedBox(height: Globals.screenHeight * 0.005),
-                            Text(
-                              'Your AI companion for mental wellness',
-                              style: TextStyle(
-                                fontSize: Globals.screenWidth * 0.035,
-                                color: Colors.grey[600],
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      // Clear chat button
-                      IconButton(
-                        onPressed: _clearChatHistory,
-                        icon: Icon(
-                          Icons.delete_outline,
-                          color: Colors.grey[600],
-                          size: Globals.screenWidth * 0.06,
-                        ),
-                        tooltip: 'Clear Chat History',
-                      ),
-                    ],
-                  ),
-                  // Message count indicator
-                  if (_messages.isNotEmpty)
-                    Container(
-                      margin: EdgeInsets.only(top: Globals.screenHeight * 0.01),
-                      child: Text(
-                        '${_messages.length} messages',
-                        style: TextStyle(
-                          fontSize: Globals.screenWidth * 0.03,
-                          color: Colors.grey[500],
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-
             // Chat Messages - Fixed gesture detector behavior
             Expanded(
               child: Container(
@@ -313,14 +256,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   horizontal: Globals.screenWidth * 0.04,
                 ),
                 child: GestureDetector(
-                  onTap: () {
-                    // Only dismiss keyboard if text field doesn't have focus
-                    // and we're not tapping on a message bubble
-                    if (!_textFocusNode.hasFocus) {
-                      _dismissKeyboard();
-                    }
-                  },
-                  behavior: HitTestBehavior.translucent,
+                  onTap: _dismissKeyboard,
+                  behavior: HitTestBehavior.opaque,
                   child: ListView.builder(
                     controller: _scrollController,
                     itemCount: _messages.length + (_isLoading ? 1 : 0),
