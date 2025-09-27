@@ -419,6 +419,12 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
+      // floatingActionButton: FloatingActionButton(
+      //   backgroundColor: Colors.red,
+      //   onPressed: _clearChatHistory,
+      //   tooltip: 'Clear Chat History',
+      //   child: Icon(Icons.delete_forever, color: Colors.white),
+      // ),
     );
   }
 
