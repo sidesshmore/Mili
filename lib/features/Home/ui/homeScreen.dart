@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mindmate/constants.dart';
 import 'package:mindmate/features/Home/widgets/micInput.dart';
 import 'package:mindmate/features/Home/widgets/textInput.dart';
+import 'package:mindmate/features/Home/widgets/waveAnimation.dart';
 import 'package:mindmate/models/chat_message.dart';
 import 'package:mindmate/services/chat_storage_service.dart';
 import 'package:mindmate/services/gemini_service.dart';
@@ -24,6 +25,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isLoading = false;
   bool _hasText = false;
   bool _isInitialized = false;
+  bool _isRecording = false;
 
   @override
   void initState() {
@@ -174,7 +176,17 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _handleMicInput(String transcribedText) {
+    // Reset recording state when transcription is received
+    setState(() {
+      _isRecording = false;
+    });
     _sendMessage(transcribedText);
+  }
+
+  void _onRecordingStateChanged(bool isRecording) {
+    setState(() {
+      _isRecording = isRecording;
+    });
   }
 
   void _dismissKeyboard() {
@@ -296,40 +308,46 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   // Text Input Field
                   Expanded(
-                    child: Container(
-                      constraints: BoxConstraints(
-                        maxHeight: Globals.screenHeight * 0.15,
-                      ),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(25),
-                        border: Border.all(color: Colors.grey[300]!, width: 1),
-                        color: Colors.grey[50],
-                      ),
-                      child: TextField(
-                        controller: _textController,
-                        focusNode: _textFocusNode,
-                        decoration: InputDecoration(
-                          hintText: 'Type a message...',
-                          hintStyle: TextStyle(
-                            color: Colors.grey[500],
-                            fontSize: Globals.screenWidth * 0.04,
+                    child: _isRecording
+                        ? const WaveAnimation() // Show wave animation when recording
+                        : Container(
+                            constraints: BoxConstraints(
+                              maxHeight: Globals.screenHeight * 0.15,
+                            ),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(25),
+                              border: Border.all(
+                                color: Colors.grey[300]!,
+                                width: 1,
+                              ),
+                              color: Colors.grey[50],
+                            ),
+                            child: TextField(
+                              controller: _textController,
+                              focusNode: _textFocusNode,
+                              decoration: InputDecoration(
+                                hintText: 'Type a message...',
+                                hintStyle: TextStyle(
+                                  color: Colors.grey[500],
+                                  fontSize: Globals.screenWidth * 0.04,
+                                ),
+                                border: InputBorder.none,
+                                contentPadding: EdgeInsets.symmetric(
+                                  horizontal: Globals.screenWidth * 0.05,
+                                  vertical: Globals.screenHeight * 0.015,
+                                ),
+                              ),
+                              style: TextStyle(
+                                fontSize: Globals.screenWidth * 0.04,
+                              ),
+                              maxLines: null,
+                              textCapitalization: TextCapitalization.sentences,
+                              onSubmitted: _hasText ? _handleTextSubmit : null,
+                              onTap: () {
+                                _textFocusNode.requestFocus();
+                              },
+                            ),
                           ),
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: Globals.screenWidth * 0.05,
-                            vertical: Globals.screenHeight * 0.015,
-                          ),
-                        ),
-                        style: TextStyle(fontSize: Globals.screenWidth * 0.04),
-                        maxLines: null,
-                        textCapitalization: TextCapitalization.sentences,
-                        onSubmitted: _hasText ? _handleTextSubmit : null,
-                        onTap: () {
-                          // Ensure the text field gets focus when tapped
-                          _textFocusNode.requestFocus();
-                        },
-                      ),
-                    ),
                   ),
 
                   SizedBox(width: Globals.screenWidth * 0.02),
@@ -364,7 +382,11 @@ class _HomeScreenState extends State<HomeScreen> {
                               size: Globals.screenWidth * 0.06,
                             ),
                           )
-                        : MicInput(onTranscription: _handleMicInput),
+                        : MicInput(
+                            onTranscription: _handleMicInput,
+                            onRecordingStateChanged:
+                                _onRecordingStateChanged, // Add this line
+                          ),
                   ),
                 ],
               ),

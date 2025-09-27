@@ -10,8 +10,13 @@ import 'package:deepgram_speech_to_text/deepgram_speech_to_text.dart';
 
 class MicInput extends StatefulWidget {
   final Function(String) onTranscription;
+  final Function(bool)? onRecordingStateChanged;
 
-  const MicInput({super.key, required this.onTranscription});
+  const MicInput({
+    super.key,
+    required this.onTranscription,
+    this.onRecordingStateChanged,
+  });
 
   @override
   State<MicInput> createState() => _MicInputState();
@@ -145,6 +150,7 @@ class _MicInputState extends State<MicInput> with TickerProviderStateMixin {
         _isProcessing = false;
       });
 
+      widget.onRecordingStateChanged?.call(true);
       _startAnimations();
 
       if (!await _audioRecorder.hasPermission()) {
@@ -171,6 +177,7 @@ class _MicInputState extends State<MicInput> with TickerProviderStateMixin {
         _isRecording = false;
         _isProcessing = false;
       });
+      widget.onRecordingStateChanged?.call(false);
       _stopAnimations();
     }
   }
@@ -181,7 +188,7 @@ class _MicInputState extends State<MicInput> with TickerProviderStateMixin {
         _isRecording = false;
         _isProcessing = true;
       });
-
+      widget.onRecordingStateChanged?.call(false);
       _stopAnimations();
 
       final path = await _audioRecorder.stop();
@@ -200,6 +207,7 @@ class _MicInputState extends State<MicInput> with TickerProviderStateMixin {
     } catch (e) {
       log('Error stopping recording: $e');
       _showErrorMessage('Failed to stop recording: $e');
+      widget.onRecordingStateChanged?.call(false);
     } finally {
       setState(() {
         _isRecording = false;
