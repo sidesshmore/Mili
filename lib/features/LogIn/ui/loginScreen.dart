@@ -64,150 +64,152 @@ class _LoginScreenState extends State<LoginScreen> {
 
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: Globals.screenWidth * 0.06,
-            vertical: Globals.screenHeight * 0.02,
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Image.asset(
-                'assets/logo.png',
-                height: Globals.screenHeight * 0.23,
-              ),
-              // SizedBox(height: Globals.screenHeight * 0.04),
-              Text(
-                'Welcome Back',
-                style: TextStyle(
-                  fontSize: Globals.screenWidth * 0.07,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey[800],
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: Globals.screenWidth * 0.06,
+              vertical: Globals.screenHeight * 0.02,
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset(
+                  'assets/logo.png',
+                  height: Globals.screenHeight * 0.23,
                 ),
-              ),
-              SizedBox(height: Globals.screenHeight * 0.01),
-              Text(
-                'Sign in to continue',
-                style: TextStyle(
-                  fontSize: Globals.screenWidth * 0.04,
-                  color: Colors.grey[600],
+                // SizedBox(height: Globals.screenHeight * 0.04),
+                Text(
+                  'Welcome Back',
+                  style: TextStyle(
+                    fontSize: Globals.screenWidth * 0.07,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[800],
+                  ),
                 ),
-              ),
-              SizedBox(height: Globals.screenHeight * 0.06),
-              Container(
-                width: Globals.screenWidth * 0.88,
-                child: TextField(
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: InputDecoration(
-                    labelText: 'Email',
-                    hintText: 'Enter your email',
-                    prefixIcon: Icon(
-                      Icons.email_outlined,
-                      color: Globals.customBlue,
-                      size: Globals.screenWidth * 0.06,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(
-                        Globals.screenWidth * 0.03,
-                      ),
-                      borderSide: BorderSide(color: Colors.grey[300]!),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(
-                        Globals.screenWidth * 0.03,
-                      ),
-                      borderSide: BorderSide(
+                SizedBox(height: Globals.screenHeight * 0.01),
+                Text(
+                  'Sign in to continue',
+                  style: TextStyle(
+                    fontSize: Globals.screenWidth * 0.04,
+                    color: Colors.grey[600],
+                  ),
+                ),
+                SizedBox(height: Globals.screenHeight * 0.06),
+                Container(
+                  width: Globals.screenWidth * 0.88,
+                  child: TextField(
+                    controller: _emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: InputDecoration(
+                      labelText: 'Email',
+                      hintText: 'Enter your email',
+                      prefixIcon: Icon(
+                        Icons.email_outlined,
                         color: Globals.customBlue,
-                        width: 2,
+                        size: Globals.screenWidth * 0.06,
                       ),
-                    ),
-                    labelStyle: TextStyle(
-                      color: Globals.customBlue,
-                      fontSize: Globals.screenWidth * 0.04,
-                    ),
-                    hintStyle: TextStyle(
-                      fontSize: Globals.screenWidth * 0.035,
-                      color: Colors.grey[500],
-                    ),
-                    contentPadding: EdgeInsets.symmetric(
-                      vertical: Globals.screenHeight * 0.02,
-                      horizontal: Globals.screenWidth * 0.04,
-                    ),
-                  ),
-                  style: TextStyle(fontSize: Globals.screenWidth * 0.04),
-                ),
-              ),
-              SizedBox(height: Globals.screenHeight * 0.03),
-              SizedBox(
-                width: Globals.screenWidth * 0.88,
-                height: Globals.screenHeight * 0.065,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _sendOTP,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Globals.customBlue,
-                    foregroundColor: Colors.white,
-                    disabledBackgroundColor: Globals.customBlue.withOpacity(
-                      0.6,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(
-                        Globals.screenWidth * 0.03,
-                      ),
-                    ),
-                    elevation: 2,
-                  ),
-                  child: _isLoading
-                      ? SizedBox(
-                          width: Globals.screenWidth * 0.06,
-                          height: Globals.screenWidth * 0.06,
-                          child: const CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : Text(
-                          'Send OTP',
-                          style: TextStyle(
-                            fontSize: Globals.screenWidth * 0.045,
-                            fontWeight: FontWeight.w600,
-                          ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(
+                          Globals.screenWidth * 0.03,
                         ),
-                ),
-              ),
-              SizedBox(height: Globals.screenHeight * 0.03),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    "Don't have an account? ",
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: Globals.screenWidth * 0.035,
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pushNamed(context, '/signup');
-                    },
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: Globals.screenWidth * 0.02,
-                        vertical: Globals.screenHeight * 0.005,
+                        borderSide: BorderSide(color: Colors.grey[300]!),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(
+                          Globals.screenWidth * 0.03,
+                        ),
+                        borderSide: BorderSide(
+                          color: Globals.customBlue,
+                          width: 2,
+                        ),
+                      ),
+                      labelStyle: TextStyle(
+                        color: Globals.customBlue,
+                        fontSize: Globals.screenWidth * 0.04,
+                      ),
+                      hintStyle: TextStyle(
+                        fontSize: Globals.screenWidth * 0.035,
+                        color: Colors.grey[500],
+                      ),
+                      contentPadding: EdgeInsets.symmetric(
+                        vertical: Globals.screenHeight * 0.02,
+                        horizontal: Globals.screenWidth * 0.04,
                       ),
                     ),
-                    child: Text(
-                      'Sign Up',
+                    style: TextStyle(fontSize: Globals.screenWidth * 0.04),
+                  ),
+                ),
+                SizedBox(height: Globals.screenHeight * 0.03),
+                SizedBox(
+                  width: Globals.screenWidth * 0.88,
+                  height: Globals.screenHeight * 0.065,
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _sendOTP,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Globals.customBlue,
+                      foregroundColor: Colors.white,
+                      disabledBackgroundColor: Globals.customBlue.withOpacity(
+                        0.6,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                          Globals.screenWidth * 0.03,
+                        ),
+                      ),
+                      elevation: 2,
+                    ),
+                    child: _isLoading
+                        ? SizedBox(
+                            width: Globals.screenWidth * 0.06,
+                            height: Globals.screenWidth * 0.06,
+                            child: const CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : Text(
+                            'Send OTP',
+                            style: TextStyle(
+                              fontSize: Globals.screenWidth * 0.045,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                  ),
+                ),
+                SizedBox(height: Globals.screenHeight * 0.03),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Don't have an account? ",
                       style: TextStyle(
-                        color: Globals.customBlue,
-                        fontWeight: FontWeight.w600,
+                        color: Colors.grey[600],
                         fontSize: Globals.screenWidth * 0.035,
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ],
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/signup');
+                      },
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: Globals.screenWidth * 0.02,
+                          vertical: Globals.screenHeight * 0.005,
+                        ),
+                      ),
+                      child: Text(
+                        'Sign Up',
+                        style: TextStyle(
+                          color: Globals.customBlue,
+                          fontWeight: FontWeight.w600,
+                          fontSize: Globals.screenWidth * 0.035,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
