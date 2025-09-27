@@ -45,6 +45,7 @@ dependencies:
   speech_to_text: ^7.3.0
   just_audio: ^0.10.5
   deepgram_speech_to_text: ^4.1.0
+  hive_flutter: ^1.1.0
 
 dev_dependencies:
   flutter_test:
