@@ -1,7 +1,10 @@
+// features/Analytics/screens/analytics_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:mindmate/features/Analytics/widgets/moodBar.dart';
-import 'package:mindmate/features/Analytics/widgets/moodHistory.dart';
+
 import 'package:mindmate/features/Analytics/widgets/streakJournal.dart';
+import 'package:mindmate/services/analytics_data_service.dart';
 
 class AnalyticsScreen extends StatefulWidget {
   const AnalyticsScreen({super.key});
@@ -11,7 +14,6 @@ class AnalyticsScreen extends StatefulWidget {
 }
 
 class _AnalyticsScreenState extends State<AnalyticsScreen> {
-  @override
   final List<String> weekDays = [
     'Mon',
     'Tue',
@@ -21,11 +23,23 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     'Sat',
     'Sun',
   ];
-  final List<bool> streakData = List.generate(31, (index) => index % 3 == 0);
-  final List<String> moodData = ['😊', '😔', '😡', '😰', '😓'];
+
+  // Updated mood labels to represent the 5 categories
+  final List<String> moodLabels = ['😊', '😔', '😡', '😰', '😐'];
+
+  late Future<Map<String, dynamic>> analyticsData;
+
+  @override
+  void initState() {
+    super.initState();
+    analyticsData = AnalyticsDataService.getAnalyticsSummary();
+  }
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
@@ -34,20 +48,42 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         title: Text(
           'Mood Analytics',
           style: TextStyle(
-            fontSize: MediaQuery.of(context).size.width * 0.06,
+            fontSize: screenWidth * 0.06,
             fontWeight: FontWeight.w600,
             color: Colors.black87,
           ),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh, color: Colors.black54),
+            onPressed: () {
+              setState(() {
+                analyticsData = AnalyticsDataService.getAnalyticsSummary();
+              });
+            },
+            tooltip: 'Refresh Analytics',
+          ),
+        ],
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              StreakJournal(streakData: streakData),
-              MoodHistory(weekDays: weekDays, moodData: moodData),
-              MoodBar(moodData: moodData),
-            ],
+        child: RefreshIndicator(
+          onRefresh: () async {
+            setState(() {
+              analyticsData = AnalyticsDataService.getAnalyticsSummary();
+            });
+          },
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Column(
+              children: [
+                // Main Analytics Widgets
+                const StreakJournal(),
+                const MoodBar(),
+
+                // Additional spacing at bottom
+                SizedBox(height: screenHeight * 0.02),
+              ],
+            ),
           ),
         ),
       ),
