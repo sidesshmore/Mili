@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mindmate/constants.dart';
 import 'package:mindmate/services/auth_service.dart';
 import 'package:mindmate/features/Onboarding/ui/onboarding-1.dart';
 
@@ -65,6 +66,8 @@ class _OTPScreenState extends State<OTPScreen> {
 
   @override
   Widget build(BuildContext context) {
+    Globals.initialize(context);
+
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -133,7 +136,7 @@ class _OTPScreenState extends State<OTPScreen> {
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _verifyOTP,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).primaryColor,
+                    backgroundColor: Globals.customBlue,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
