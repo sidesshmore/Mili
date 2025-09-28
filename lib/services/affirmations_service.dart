@@ -181,7 +181,7 @@ class AffirmationsService {
 
   static String _createAffirmationsPrompt(String summariesText) {
     return '''
-You are creating personalized affirmations for someone based on their week of mental health conversations with their AI companion MindMate. 
+You are creating personalized affirmations for someone based on their week of mental health conversations with their AI companion Mili. 
 
 Based on these conversation summaries, create 7-8 positive, empowering affirmations that:
 

@@ -278,7 +278,7 @@ class _MicInputState extends State<MicInput> with TickerProviderStateMixin {
       builder: (context) => AlertDialog(
         title: const Text('Microphone Permission Required'),
         content: const Text(
-          'MindMate needs microphone access for voice input. Please grant permission to continue.',
+          'Mili needs microphone access for voice input. Please grant permission to continue.',
         ),
         actions: [
           TextButton(

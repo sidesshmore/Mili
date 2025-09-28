@@ -88,7 +88,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _addWelcomeMessage() {
     final welcomeMessage = ChatMessage(
-      text: "Hi there! 👋 I'm your MindMate. How are you feeling today?",
+      text: "Hi there! 👋 I'm your Mili. How are you feeling today?",
       isUser: false,
       timestamp: DateTime.now(),
       userId: '', // Will be set when saving
@@ -359,7 +359,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text('MindMate')),
+      appBar: AppBar(title: Text('Mili')),
       backgroundColor: Colors.grey[50],
       body: SafeArea(
         child: Column(
@@ -690,7 +690,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               SizedBox(width: Globals.screenWidth * 0.02),
               Text(
-                'MindMate is typing...',
+                'Mili is typing...',
                 style: TextStyle(
                   color: Colors.grey[600],
                   fontSize: Globals.screenWidth * 0.035,

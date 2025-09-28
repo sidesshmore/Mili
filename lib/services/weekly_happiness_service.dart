@@ -218,7 +218,7 @@ class WeeklyHappinessService {
 
   static String _createHappinessPrompt(String summariesText) {
     return '''
-You are analyzing a week's worth of mental health conversation summaries between a user and their AI companion MindMate. Based on these summaries, identify the top 3 specific moments or experiences this person should feel proud of or grateful for this week.
+You are analyzing a week's worth of mental health conversation summaries between a user and their AI companion Mili. Based on these summaries, identify the top 3 specific moments or experiences this person should feel proud of or grateful for this week.
 
 IMPORTANT: Create titles that help the user instantly recall the exact moment or day. Use specific details, actions, or outcomes mentioned in the conversations.
 

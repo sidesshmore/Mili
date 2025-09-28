@@ -102,7 +102,7 @@ class _SplashScreenState extends State<SplashScreen>
               ),
               SizedBox(height: screenHeight * 0.02),
               Text(
-                'Mind Mate',
+                'Mili',
                 style: TextStyle(
                   fontSize: screenWidth * 0.13,
                   fontWeight: FontWeight.w600,

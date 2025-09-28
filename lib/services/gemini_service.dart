@@ -110,7 +110,7 @@ class GeminiService {
         'Previous conversation context (recent messages):',
       );
       for (final msg in contextMessages) {
-        final speaker = msg.isUser ? 'User' : 'MindMate';
+        final speaker = msg.isUser ? 'User' : 'Mili';
         // Truncate very long messages to keep within token limits
         final truncatedText = msg.text.length > 200
             ? '${msg.text.substring(0, 200)}...'
@@ -121,7 +121,7 @@ class GeminiService {
     }
 
     return '''
-You are MindMate, a compassionate AI companion focused on mental health and wellness. You provide supportive, empathetic responses while maintaining appropriate boundaries.
+You are Mili, a compassionate AI companion focused on mental health and wellness. You provide supportive, empathetic responses while maintaining appropriate boundaries.
 
 Guidelines for your responses:
 - Be warm, empathetic, and non-judgmental
@@ -137,13 +137,13 @@ Guidelines for your responses:
 
 ${contextBuilder.toString()}Current user message: "$userMessage"
 
-Respond as MindMate with care and understanding, taking into account the conversation history:
+Respond as Mili with care and understanding, taking into account the conversation history:
 ''';
   }
 
   String _createMentalHealthPrompt(String userMessage) {
     return '''
-You are MindMate, a compassionate AI companion focused on mental health and wellness. You provide supportive, empathetic responses while maintaining appropriate boundaries.
+You are Mili, a compassionate AI companion focused on mental health and wellness. You provide supportive, empathetic responses while maintaining appropriate boundaries.
 
 Guidelines for your responses:
 - Be warm, empathetic, and non-judgmental
@@ -157,7 +157,7 @@ Guidelines for your responses:
 
 User's message: "$userMessage"
 
-Respond as MindMate with care and understanding:
+Respond as Mili with care and understanding:
 ''';
   }
 

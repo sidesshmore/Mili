@@ -254,7 +254,7 @@ class ChatSummaryService {
     final StringBuffer buffer = StringBuffer();
 
     for (final message in messages) {
-      final speaker = message.isUser ? 'User' : 'MindMate';
+      final speaker = message.isUser ? 'User' : 'Mili';
       final timestamp = message.timestamp.toIso8601String();
       buffer.writeln('[$timestamp] $speaker: ${message.text}');
     }
@@ -265,7 +265,7 @@ class ChatSummaryService {
   /// Create prompt for summary generation
   static String _createSummaryPrompt(String conversationText) {
     return '''
-You are analyzing a mental health conversation between a user and MindMate (an AI companion). Please create a comprehensive summary that captures:
+You are analyzing a mental health conversation between a user and Mili (an AI companion). Please create a comprehensive summary that captures:
 
 1. The main topics and themes discussed
 2. User's emotional state and mood changes

@@ -57,37 +57,7 @@ class _MyAppState extends State<MyApp> {
         useMaterial3: true,
       ),
       debugShowCheckedModeBanner: false,
-      home: FutureBuilder<bool>(
-        future: AuthService.isLoggedIn(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const SplashScreen();
-          }
-
-          if (snapshot.data == true) {
-            // User is logged in, check if onboarding is completed
-            return FutureBuilder<Map<String, dynamic>?>(
-              future: AuthService.getOnboardingData(),
-              builder: (context, onboardingSnapshot) {
-                if (onboardingSnapshot.connectionState ==
-                    ConnectionState.waiting) {
-                  return const SplashScreen();
-                }
-
-                if (onboardingSnapshot.data == null) {
-                  // User hasn't completed onboarding
-                  return const OnboardingOne();
-                } else {
-                  // User has completed onboarding
-                  return const Navbar();
-                }
-              },
-            );
-          } else {
-            return const SplashScreen();
-          }
-        },
-      ),
+      home: const SplashScreen(), // Always start with splash screen
       routes: {
         '/home': (context) => const HomeScreen(),
         '/navbar': (context) => const Navbar(),
