@@ -38,6 +38,8 @@
 	<string>This app needs microphone access to record voice messages for MindMate AI assistant.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>This app uses speech recognition to convert your voice to text for better communication with MindMate.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>This app needs access to speech services for text-to-speech functionality.</string>
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>

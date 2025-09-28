@@ -7,6 +7,7 @@ import 'package:mindmate/models/chat_message.dart';
 import 'package:mindmate/services/chat_storage_service.dart';
 import 'package:mindmate/services/chat_summary_service.dart';
 import 'package:mindmate/services/gemini_service.dart';
+import 'package:mindmate/services/deepgram_tts_service.dart';
 import 'dart:developer';
 
 class HomeScreen extends StatefulWidget {
@@ -28,6 +29,9 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isInitialized = false;
   bool _isRecording = false;
 
+  final Map<int, bool> _isMessagePlaying = {};
+  final DeepgramTTSService _ttsService = DeepgramTTSService();
+
   @override
   void initState() {
     super.initState();
@@ -44,10 +48,6 @@ class _HomeScreenState extends State<HomeScreen> {
       // Load previous messages for the current user
       final savedMessages =
           await ChatStorageService.getMessagesForCurrentUser();
-
-      // log(
-      //   'Loaded messages from Hive: ${savedMessages.map((m) => '[${m.timestamp}] ${m.isUser ? 'User' : 'AI'}: ${m.text}').join('\n')}',
-      // );
 
       setState(() {
         _messages.clear();
@@ -180,20 +180,94 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<void> _toggleTTS(String text, int messageIndex) async {
+    try {
+      // If this message is currently playing, stop it
+      if (_isMessagePlaying[messageIndex] == true) {
+        await _ttsService.stopSpeaking();
+        setState(() {
+          _isMessagePlaying[messageIndex] = false;
+        });
+        return;
+      }
+
+      // Stop any other playing messages first
+      await _ttsService.stopSpeaking();
+      setState(() {
+        _isMessagePlaying.clear();
+        _isMessagePlaying[messageIndex] = true;
+      });
+
+      log(
+        'Attempting to play TTS for message: ${text.substring(0, text.length > 100 ? 100 : text.length)}...',
+      );
+
+      // Start playing the current message with completion callback
+      final success = await _ttsService.speakText(
+        text,
+        onComplete: () {
+          if (mounted) {
+            setState(() {
+              _isMessagePlaying[messageIndex] = false;
+            });
+          }
+        },
+      );
+
+      if (!success) {
+        setState(() {
+          _isMessagePlaying[messageIndex] = false;
+        });
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Failed to play audio. Please check your device\'s TTS settings.',
+              ),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
+        return;
+      }
+    } catch (e, stackTrace) {
+      log('Error in TTS toggle: $e');
+      log('Stack trace: $stackTrace');
+
+      setState(() {
+        _isMessagePlaying[messageIndex] = false;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error playing audio: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
+  }
+
   Future<void> _showSummaryStats() async {
     final stats = await ChatSummaryService.getSummaryStats();
     log('Summary Stats: $stats');
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Summaries: ${stats['totalSummaries']}, '
-          'Messages: ${stats['currentMessageCount']}, '
-          'Next at: ${stats['nextSummaryAt']}',
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Summaries: ${stats['totalSummaries']}, '
+            'Messages: ${stats['currentMessageCount']}, '
+            'Next at: ${stats['nextSummaryAt']}',
+          ),
+          duration: const Duration(seconds: 3),
         ),
-        duration: const Duration(seconds: 3),
-      ),
-    );
+      );
+    }
   }
 
   void _handleTextSubmit(String text) {
@@ -243,19 +317,23 @@ class _HomeScreenState extends State<HomeScreen> {
                   });
                   _addWelcomeMessage();
 
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Chat history cleared successfully'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Chat history cleared successfully'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  }
                 } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Error clearing chat history: $e'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Error clearing chat history: $e'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
                 }
               },
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
@@ -409,8 +487,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           )
                         : MicInput(
                             onTranscription: _handleMicInput,
-                            onRecordingStateChanged:
-                                _onRecordingStateChanged, // Add this line
+                            onRecordingStateChanged: _onRecordingStateChanged,
                           ),
                   ),
                 ],
@@ -419,12 +496,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
-      // floatingActionButton: FloatingActionButton(
-      //   backgroundColor: Colors.red,
-      //   onPressed: _clearChatHistory,
-      //   tooltip: 'Clear Chat History',
-      //   child: Icon(Icons.delete_forever, color: Colors.white),
-      // ),
     );
   }
 
@@ -461,13 +532,41 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  message.text,
-                  style: TextStyle(
-                    color: message.isUser ? Colors.white : Colors.black87,
-                    fontSize: Globals.screenWidth * 0.04,
-                    fontWeight: FontWeight.w400,
-                  ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        message.text,
+                        style: TextStyle(
+                          color: message.isUser ? Colors.white : Colors.black87,
+                          fontSize: Globals.screenWidth * 0.04,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ),
+                    // Add TTS button only for AI messages
+                    if (!message.isUser) ...[
+                      SizedBox(width: Globals.screenWidth * 0.02),
+                      GestureDetector(
+                        onTap: () => _toggleTTS(message.text, index),
+                        child: Container(
+                          padding: EdgeInsets.all(Globals.screenWidth * 0.015),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[100],
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            (_isMessagePlaying[index] ?? false)
+                                ? Icons.stop_rounded
+                                : Icons.volume_up_rounded,
+                            size: Globals.screenWidth * 0.04,
+                            color: Globals.customBlue,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
                 SizedBox(height: Globals.screenHeight * 0.005),
                 Text(
@@ -533,19 +632,23 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         _messages.removeAt(index);
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Message deleted'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Message deleted'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error deleting message: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error deleting message: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -610,6 +713,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _textController.dispose();
     _scrollController.dispose();
     _textFocusNode.dispose();
+    _ttsService.dispose();
     super.dispose();
   }
 }
