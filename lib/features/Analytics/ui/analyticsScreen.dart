@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:mindmate/features/Analytics/widgets/moodBar.dart';
 
 import 'package:mindmate/features/Analytics/widgets/streakJournal.dart';
+import 'package:mindmate/features/Analytics/widgets/weeklyHappiness.dart';
 import 'package:mindmate/services/analytics_data_service.dart';
 
 class AnalyticsScreen extends StatefulWidget {
@@ -79,6 +80,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 // Main Analytics Widgets
                 const StreakJournal(),
                 const MoodBar(),
+                const WeeklyHappiness(),
 
                 // Additional spacing at bottom
                 SizedBox(height: screenHeight * 0.02),
