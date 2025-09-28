@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mindmate/constants.dart';
 import 'package:mindmate/features/Activities/widgets/affirmationsScreen.dart';
 import 'package:mindmate/features/Activities/widgets/breathingScreen.dart';
+import 'package:mindmate/features/Activities/widgets/journeyTimelineScreen.dart';
 import 'package:mindmate/features/Activities/widgets/quotesScreen.dart';
 import 'package:mindmate/services/auth_service.dart';
 
@@ -19,18 +20,22 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
   bool isLoading = true;
 
   // Updated activities list with widget constructors instead of routes
+  // Replace the activities list in _ActivitiesScreenState class
+
   final List<Map<String, dynamic>> activities = [
     {
-      'title': 'Breathing',
-      'icon': Icons.air,
+      'title': 'Journey Timeline',
+      'subtitle': 'Your emotional journey over time',
+      'icon': Icons.timeline,
       'color': Colors.blue.shade100,
-      'screen': const BreathingScreen(),
+      'screen': const JourneyTimelineScreen(),
     },
     {
-      'title': 'Affirmations',
-      'icon': Icons.favorite,
-      'color': Colors.pink.shade100,
-      'screen': const AffirmationsScreen(), // You'll need to create this screen
+      'title': 'Breathing',
+      'subtitle': 'Guided breathing exercises',
+      'icon': Icons.air,
+      'color': Colors.teal.shade100,
+      'screen': const BreathingScreen(),
     },
     {
       'title': 'Quotes',
@@ -318,11 +323,6 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'What would you like to do today?',
-                style: TextStyle(fontSize: 18, color: Colors.grey),
-              ),
-              const SizedBox(height: 24),
               Expanded(
                 child: ListView.builder(
                   itemCount: activities.length,
@@ -401,8 +401,11 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
   }
 }
 
+// Replace the ActivityCard class in activitiesScreen.dart
+
 class ActivityCard extends StatelessWidget {
   final String title;
+  final String? subtitle;
   final IconData icon;
   final Color color;
   final VoidCallback onTap;
@@ -410,6 +413,7 @@ class ActivityCard extends StatelessWidget {
   const ActivityCard({
     super.key,
     required this.title,
+    this.subtitle,
     required this.icon,
     required this.color,
     required this.onTap,
@@ -420,7 +424,7 @@ class ActivityCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 100,
+        height: subtitle != null ? 120 : 100,
         decoration: BoxDecoration(
           color: color,
           borderRadius: BorderRadius.circular(20),
@@ -439,15 +443,32 @@ class ActivityCard extends StatelessWidget {
             children: [
               Icon(icon, size: 32, color: Colors.black87),
               const SizedBox(width: 20),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    if (subtitle != null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        subtitle!,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.black87.withOpacity(0.7),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
-              const Spacer(),
               const Icon(Icons.arrow_forward_ios, color: Colors.black54),
             ],
           ),
