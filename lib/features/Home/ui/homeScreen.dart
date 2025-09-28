@@ -362,13 +362,24 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: Text(
-          'Mili',
-          style: TextStyle(
-            fontSize: Globals.screenWidth * 0.06,
-            fontWeight: FontWeight.w600,
-            color: Colors.black87,
-          ),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset(
+              'assets/mascot.png',
+              height: Globals.screenWidth * 0.1,
+              width: Globals.screenWidth * 0.1,
+            ),
+            SizedBox(width: Globals.screenWidth * 0.02),
+            Text(
+              'Mili',
+              style: TextStyle(
+                fontSize: Globals.screenWidth * 0.06,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+          ],
         ),
       ),
       backgroundColor: Colors.grey[50],
