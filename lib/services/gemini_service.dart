@@ -17,10 +17,48 @@ class GeminiService {
     return key;
   }
 
+  bool isCrisisMessage(String message) {
+    // Remove the underscore
+    final crisisKeywords = [
+      'suicide',
+      'kill myself',
+      'end my life',
+      'want to die',
+      'not worth living',
+      'hurt myself',
+      'self harm',
+      'cut myself',
+      'overdose',
+      'pills',
+      'hanging',
+      'jump off',
+      'bridge',
+      'roof',
+      'gun',
+      'knife',
+      'better off dead',
+      'nobody cares',
+      'hopeless',
+      'worthless',
+      'can\'t go on',
+      'give up',
+      'end it all',
+      'finish it',
+    ];
+
+    final lowercaseMessage = message.toLowerCase();
+    return crisisKeywords.any((keyword) => lowercaseMessage.contains(keyword));
+  }
+
   Future<String> generateResponse(String message) async {
     try {
       // Get recent context from storage
       final contextMessages = await ChatStorageService.getRecentContextForAI();
+
+      if (isCrisisMessage(message)) {
+        // Return a proper crisis response instead of a flag
+        return "I'm really concerned about you right now. Your wellbeing matters, and there are people who want to help. Please consider reaching out to a crisis counselor who can provide immediate support.";
+      }
 
       // Create a mental health focused prompt with context
       final enhancedPrompt = await _createMentalHealthPromptWithContext(

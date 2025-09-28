@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mindmate/constants.dart';
+import 'package:mindmate/features/Home/widgets/callHelp.dart';
 import 'package:mindmate/features/Home/widgets/micInput.dart';
 import 'package:mindmate/features/Home/widgets/textInput.dart';
 import 'package:mindmate/features/Home/widgets/waveAnimation.dart';
@@ -144,23 +145,25 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _sendMessage(String message) async {
     if (message.trim().isEmpty) return;
 
-    // Add user message
+    // Add user message first
     _addMessage(message, true);
 
     // Clear text field
     _textController.clear();
     setState(() {
       _hasText = false;
-    });
-
-    setState(() {
       _isLoading = true;
     });
 
     try {
-      // Get AI response from Gemini (now includes context automatically)
-      final response = await _geminiService.generateResponse(message);
-      _addMessage(response, false);
+      // Check if it's a crisis message before sending to AI
+      if (_geminiService.isCrisisMessage(message)) {
+        _addCrisisHelpWidget();
+      } else {
+        // Get AI response from Gemini
+        final response = await _geminiService.generateResponse(message);
+        _addMessage(response, false);
+      }
 
       await ChatSummaryService.checkAndGenerateSummaries();
 
@@ -250,6 +253,25 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       }
     }
+  }
+
+  void _addCrisisHelpWidget() {
+    // Create a special message that will render as CallHelp widget
+    final crisisMessage = ChatMessage(
+      text: '__SHOW_CRISIS_HELP__', // This won't be displayed as text
+      isUser: false,
+      timestamp: DateTime.now(),
+      userId: '',
+    );
+
+    setState(() {
+      _messages.add(crisisMessage);
+    });
+
+    // Don't save this special message to storage since it's just a UI trigger
+    // _saveMessageToStorage(crisisMessage); // Remove this line
+
+    _scrollToBottom();
   }
 
   Future<void> _showSummaryStats() async {
@@ -522,6 +544,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildMessageBubble(ChatMessage message, int index) {
+    if (message.text == '__SHOW_CRISIS_HELP__') {
+      return const CallHelp();
+    }
     return Container(
       margin: EdgeInsets.only(
         bottom: Globals.screenHeight * 0.01,

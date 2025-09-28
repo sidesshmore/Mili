@@ -40,6 +40,10 @@
 	<string>This app uses speech recognition to convert your voice to text for better communication with MindMate.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>This app needs access to speech services for text-to-speech functionality.</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+  		<string>tel</string>
+	</array>
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
