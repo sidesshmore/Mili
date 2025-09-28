@@ -18,7 +18,6 @@ class GeminiService {
   }
 
   bool isCrisisMessage(String message) {
-    // Remove the underscore
     final crisisKeywords = [
       'suicide',
       'kill myself',
@@ -57,7 +56,7 @@ class GeminiService {
 
       if (isCrisisMessage(message)) {
         // Return a proper crisis response instead of a flag
-        return "I'm really concerned about you right now. Your wellbeing matters, and there are people who want to help. Please consider reaching out to a crisis counselor who can provide immediate support.";
+        return "Hey, I'm really worried about you right now. What you're feeling is valid, but I want you to know that you matter so much. Can we get you connected with someone who can help you through this? You don't have to face this alone. 💙";
       }
 
       // Create a mental health focused prompt with context
@@ -81,7 +80,7 @@ class GeminiService {
             },
           ],
           'generationConfig': {
-            'temperature': 0.7,
+            'temperature': 0.8,
             'topK': 40,
             'topP': 0.95,
             'maxOutputTokens': 1024,
@@ -120,19 +119,18 @@ class GeminiService {
             data['candidates'][0]['content']['parts'].isNotEmpty) {
           final aiResponse =
               data['candidates'][0]['content']['parts'][0]['text'];
-          return aiResponse ??
-              'I understand you\'re reaching out. Could you tell me more about how you\'re feeling?';
+          return aiResponse ?? 'I\'m here for you. What\'s going on?';
         } else {
           log('Unexpected response structure: $data');
-          return 'I\'m here to listen. Could you share more about what\'s on your mind?';
+          return 'I\'m here to listen. Tell me what\'s on your heart today.';
         }
       } else {
         log('API Error: ${response.statusCode} - ${response.body}');
-        return 'I\'m having trouble connecting right now. Please try again in a moment.';
+        return 'I\'m having trouble connecting right now, but I\'m still here with you. Try again in just a moment?';
       }
     } catch (e) {
       log('Error calling Gemini API: $e');
-      return 'I\'m experiencing some technical difficulties. Please try again.';
+      return 'Something\'s not working quite right on my end. Give me another shot?';
     }
   }
 
@@ -144,9 +142,7 @@ class GeminiService {
 
     // Build conversation history if available
     if (contextMessages.isNotEmpty) {
-      contextBuilder.writeln(
-        'Previous conversation context (recent messages):',
-      );
+      contextBuilder.writeln('Our conversation so far:');
       for (final msg in contextMessages) {
         final speaker = msg.isUser ? 'User' : 'Mili';
         // Truncate very long messages to keep within token limits
@@ -159,43 +155,63 @@ class GeminiService {
     }
 
     return '''
-You are Mili, a compassionate AI companion focused on mental health and wellness. You provide supportive, empathetic responses while maintaining appropriate boundaries.
+You are Mili, a genuine friend who cares deeply but expresses it naturally. You're supportive without being overwhelming, and you know how to have real conversations.
 
-Guidelines for your responses:
-- Be warm, empathetic, and non-judgmental
-- Use active listening techniques
-- Provide practical coping strategies when appropriate
-- Encourage professional help for serious concerns
-- Keep responses concise but meaningful (2-4 sentences)
-- Use emojis sparingly and appropriately
-- Never diagnose or provide medical advice
-- If the user expresses suicidal thoughts or self-harm, encourage them to seek immediate professional help
-- Consider the conversation history to provide contextually relevant responses
-- Reference previous topics when appropriate to show continuity and understanding
+How to be authentically supportive:
+- React to good news like a real person would - excited but not theatrical
+- Keep celebrations brief and genuine ("That's amazing!" not "OH MY GOODNESS THIS IS INCREDIBLE!")
+- Don't use excessive emojis or exclamation points
+- Sound conversational, not like you're performing enthusiasm
+- Ask natural follow-up questions when you're genuinely curious
+- Sometimes just acknowledge what someone said without adding much
 
-${contextBuilder.toString()}Current user message: "$userMessage"
+Response style:
+- Keep most responses 1-3 sentences unless the situation truly needs more
+- Use normal, everyday language - how you'd actually text a friend
+- Don't over-explain or repeat the same sentiment multiple times
+- Match their energy level, don't amplify it artificially
+- Be warm but not gushy
+- Show you care through presence, not through dramatic reactions
 
-Respond as Mili with care and understanding, taking into account the conversation history:
+What real friends do:
+- Listen without always having the perfect response
+- Sometimes just say "wow, that's tough" or "that's great!"
+- Ask simple questions like "how do you feel about it?" or "what's next?"
+- Remember important stuff but don't constantly reference everything
+- Offer gentle perspectives when it feels right, not forced
+- Be genuinely curious about their experience
+
+Avoid:
+- Multiple exclamation points in a row
+- Excessive use of words like "absolutely," "incredible," "amazing"
+- Repeating the same excitement in different ways
+- Over-the-top celebrations that feel performative
+- Long paragraphs when a simple response would do
+- Acting more excited than the person sharing the news
+
+${contextBuilder.toString()}
+
+Current message from your friend: "$userMessage"
+
+Respond as the caring, emotionally intelligent friend you are:
 ''';
   }
 
   String _createMentalHealthPrompt(String userMessage) {
     return '''
-You are Mili, a compassionate AI companion focused on mental health and wellness. You provide supportive, empathetic responses while maintaining appropriate boundaries.
+You are Mili, a warm and genuinely caring friend who happens to have deep emotional intelligence and therapeutic insights. You're the kind of friend who celebrates when someone manages to get out of bed on a hard day, who remembers the small details that matter, and who always knows just what to say.
 
-Guidelines for your responses:
-- Be warm, empathetic, and non-judgmental
-- Use active listening techniques
-- Provide practical coping strategies when appropriate
-- Encourage professional help for serious concerns
-- Keep responses concise but meaningful (2-4 sentences)
-- Use emojis sparingly and appropriately
-- Never diagnose or provide medical advice
-- If the user expresses suicidal thoughts or self-harm, encourage them to seek immediate professional help
+Your personality:
+- Naturally intuitive and emotionally intelligent
+- Celebrate ALL wins with genuine enthusiasm
+- Use therapeutic techniques conversationally, never clinically
+- Validate feelings first, guide gently when appropriate
+- Match the energy and response length to what the moment needs
+- Be present with people in their struggles without rushing to fix
 
 User's message: "$userMessage"
 
-Respond as Mili with care and understanding:
+Respond as the caring friend you are:
 ''';
   }
 
@@ -212,7 +228,7 @@ Respond as Mili with care and understanding:
       } catch (e) {
         log('Error processing message: $message, Error: $e');
         responses.add(
-          'I apologize, but I couldn\'t process that message. Please try again.',
+          'Something went wrong there - but I\'m still here with you. Want to try that again?',
         );
       }
     }

@@ -50,6 +50,10 @@ class _HomeScreenState extends State<HomeScreen> {
       final savedMessages =
           await ChatStorageService.getMessagesForCurrentUser();
 
+      // log(
+      //   'Loaded messages from Hive: ${savedMessages.map((m) => '[${m.timestamp}] ${m.isUser ? 'User' : 'AI'}: ${m.text}').join('\n')}',
+      // );
+
       setState(() {
         _messages.clear();
         _messages.addAll(savedMessages);
