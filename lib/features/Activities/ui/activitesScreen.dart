@@ -271,18 +271,20 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
     // Initialize Globals for this context
     Globals.initialize(context);
 
+    double screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
         backgroundColor: Colors.white,
-        elevation: 2,
+        elevation: 0,
         automaticallyImplyLeading: false,
         title: Text(
           'Activities',
           style: TextStyle(
-            fontSize: Globals.screenWidth * 0.05,
+            fontSize: screenWidth * 0.06,
             fontWeight: FontWeight.w600,
-            color: Globals.customBlue,
+            color: Colors.black87,
           ),
         ),
         actions: [
@@ -293,22 +295,20 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
                 width: 24,
                 height: 24,
                 child: CircularProgressIndicator(
-                  color: Globals.customBlue,
+                  color: Colors.black54,
                   strokeWidth: 2,
                 ),
               ),
             )
           else
-            Padding(
-              padding: const EdgeInsets.only(right: 16.0),
-              child: GestureDetector(
-                onTap: _showUserDetailsModal,
-                child: CircleAvatar(
-                  backgroundColor: Globals.customBlue,
-                  radius: 18,
-                  child: Icon(Icons.person, color: Colors.white, size: 20),
-                ),
+            IconButton(
+              icon: CircleAvatar(
+                backgroundColor: Colors.black87,
+                radius: 16,
+                child: Icon(Icons.person, color: Colors.white, size: 18),
               ),
+              onPressed: _showUserDetailsModal,
+              tooltip: 'Profile',
             ),
         ],
       ),

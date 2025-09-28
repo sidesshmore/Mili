@@ -38,7 +38,7 @@ class _AffirmationsScreenState extends State<AffirmationsScreen> {
       } else {
         setState(() {
           errorMessage =
-              'No chat data available for this week. Start chatting with MindMate to get personalized affirmations!';
+              'No chat data available for this week. Start chatting with Mili to get personalized affirmations!';
           isLoading = false;
         });
       }
