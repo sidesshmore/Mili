@@ -110,57 +110,6 @@ class _QuotesScreenState extends State<QuotesScreen> {
           padding: EdgeInsets.all(Globals.screenWidth * 0.04),
           child: Column(
             children: [
-              // Header info
-              Container(
-                width: double.infinity,
-                padding: EdgeInsets.all(Globals.screenWidth * 0.05),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Colors.purple.shade50, Colors.blue.shade50],
-                  ),
-                  borderRadius: BorderRadius.circular(
-                    Globals.screenWidth * 0.04,
-                  ),
-                  border: Border.all(color: Colors.purple.shade100),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.format_quote,
-                          color: Colors.purple.shade400,
-                          size: Globals.screenWidth * 0.06,
-                        ),
-                        SizedBox(width: Globals.screenWidth * 0.02),
-                        Text(
-                          'Daily Inspiration',
-                          style: TextStyle(
-                            fontSize: Globals.screenWidth * 0.045,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.purple.shade700,
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: Globals.screenHeight * 0.01),
-                    Text(
-                      'Swipe through uplifting quotes to brighten your day.',
-                      style: TextStyle(
-                        fontSize: Globals.screenWidth * 0.035,
-                        color: Colors.grey[700],
-                        height: 1.3,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              SizedBox(height: Globals.screenHeight * 0.03),
-
               // Quotes PageView
               Expanded(
                 child: PageView.builder(
