@@ -40,7 +40,7 @@ class _WeeklyHappinessState extends State<WeeklyHappiness> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Weekly Highlights',
+              '3 reasons to be happy this week',
               style: TextStyle(
                 fontSize: screenWidth * 0.045,
                 fontWeight: FontWeight.w600,

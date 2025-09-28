@@ -93,7 +93,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _addWelcomeMessage() {
     final welcomeMessage = ChatMessage(
-      text: "Hi there! 👋 I'm your Mili. How are you feeling today?",
+      text: "Hi there! I'm your Mili. How are you feeling today?",
       isUser: false,
       timestamp: DateTime.now(),
       userId: '', // Will be set when saving
@@ -544,6 +544,12 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
+      // floatingActionButton: FloatingActionButton(
+      //   backgroundColor: Colors.red,
+      //   onPressed: _clearChatHistory,
+      //   tooltip: 'Clear Chat History',
+      //   child: Icon(Icons.delete_forever, color: Colors.white),
+      // ),
     );
   }
 
