@@ -114,7 +114,7 @@ class _SplashScreenState extends State<SplashScreen>
                 width: screenWidth * (351 / 432),
                 child: Text(
                   textAlign: TextAlign.center,
-                  'A pocket companion for your thoughts.',
+                  'Your pocket compainion',
                   style: TextStyle(
                     color: Colors.black,
                     fontSize: screenWidth * 0.055,
