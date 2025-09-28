@@ -359,7 +359,18 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text('Mili')),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: Text(
+          'Mili',
+          style: TextStyle(
+            fontSize: Globals.screenWidth * 0.06,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+          ),
+        ),
+      ),
       backgroundColor: Colors.grey[50],
       body: SafeArea(
         child: Column(

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:mindmate/services/auth_service.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -46,7 +47,7 @@ class _SplashScreenState extends State<SplashScreen>
       _controller.reverse().then((value) async {
         final isLoggedIn = await AuthService.isLoggedIn();
         if (isLoggedIn) {
-          Navigator.pushReplacementNamed(context, '/home');
+          Navigator.pushReplacementNamed(context, '/navbar');
         } else {
           Navigator.pushReplacementNamed(context, '/signup');
         }
@@ -69,7 +70,7 @@ class _SplashScreenState extends State<SplashScreen>
         gradient: LinearGradient(
           begin: FractionalOffset(0.0, 1),
           end: FractionalOffset(0.0, 1),
-          colors: [Color.fromARGB(255, 49, 91, 242), Color(0xFFDDD4C2)],
+          colors: [Color(0xffF4F1EB), Color(0xFFDDD4C2)],
         ),
       ),
       child: Scaffold(
@@ -100,13 +101,13 @@ class _SplashScreenState extends State<SplashScreen>
                   ),
                 ],
               ),
-              SizedBox(height: screenHeight * 0.02),
+              SizedBox(height: screenHeight * 0.01),
               Text(
                 'Mili',
-                style: TextStyle(
-                  fontSize: screenWidth * 0.13,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
+                style: GoogleFonts.amaranth(
+                  fontSize: screenWidth * 0.24,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.black,
                 ),
               ),
               SizedBox(
@@ -115,7 +116,7 @@ class _SplashScreenState extends State<SplashScreen>
                   textAlign: TextAlign.center,
                   'A pocket companion for your thoughts.',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: Colors.black,
                     fontSize: screenWidth * 0.055,
                     fontWeight: FontWeight.w600,
                   ),
