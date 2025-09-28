@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mindmate/constants.dart';
-import 'package:mindmate/features/Activities/widgets/affirmationsScreen.dart';
 import 'package:mindmate/features/Activities/widgets/breathingScreen.dart';
 import 'package:mindmate/features/Activities/widgets/journeyTimelineScreen.dart';
-import 'package:mindmate/features/Activities/widgets/quotesScreen.dart';
 import 'package:mindmate/services/auth_service.dart';
 
 class ActivitiesScreen extends StatefulWidget {
@@ -19,12 +17,14 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
   Map<String, dynamic>? onboardingData;
   bool isLoading = true;
 
-  // Updated activities list with widget constructors instead of routes
-  // Replace the activities list in _ActivitiesScreenState class
+  // PageController for quotes
+  final PageController _pageController = PageController();
+  int currentQuoteIndex = 0;
 
+  // Updated activities list without quotes
   final List<Map<String, dynamic>> activities = [
     {
-      'title': 'Journey Timeline',
+      'title': 'Emotional Journey',
       'subtitle': 'Your emotional journey over time',
       'icon': Icons.timeline,
       'color': Colors.blue.shade100,
@@ -37,11 +37,48 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
       'color': Colors.teal.shade100,
       'screen': const BreathingScreen(),
     },
+  ];
+
+  // Quotes data
+  final List<Map<String, String>> quotes = [
     {
-      'title': 'Quotes',
-      'icon': Icons.format_quote,
-      'color': Colors.purple.shade100,
-      'screen': const QuotesScreen(),
+      'quote':
+          'You are stronger than you know, braver than you believe, and more capable than you can imagine.',
+      'author': 'Unknown',
+    },
+    {
+      'quote':
+          'The only way out is through. Keep going, keep growing, keep glowing.',
+      'author': 'Robert Frost',
+    },
+    {
+      'quote':
+          'Your mental health is a priority. Your happiness is essential. Your self-care is a necessity.',
+      'author': 'Unknown',
+    },
+    {
+      'quote':
+          'Healing isn\'t about erasing your past, it\'s about learning to live with it and grow beyond it.',
+      'author': 'Unknown',
+    },
+    {
+      'quote': 'Progress, not perfection. Every small step forward counts.',
+      'author': 'Unknown',
+    },
+    {
+      'quote':
+          'It\'s okay to not be okay. What\'s not okay is staying in that place forever.',
+      'author': 'Unknown',
+    },
+    {
+      'quote':
+          'You have been assigned this mountain to show others it can be moved.',
+      'author': 'Mel Robbins',
+    },
+    {
+      'quote':
+          'Mental health is not a destination, but a process. It\'s about how you drive, not where you\'re going.',
+      'author': 'Noam Shpancer',
     },
   ];
 
@@ -49,6 +86,12 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
   void initState() {
     super.initState();
     _loadUserDetails();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadUserDetails() async {
@@ -86,6 +129,12 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
       }
     }
     return userEmail?.split('@')[0] ?? 'User';
+  }
+
+  void _onQuotePageChanged(int index) {
+    setState(() {
+      currentQuoteIndex = index;
+    });
   }
 
   void _showUserDetailsModal() {
@@ -277,6 +326,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
     Globals.initialize(context);
 
     double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
@@ -323,35 +373,174 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: ListView.builder(
-                  itemCount: activities.length,
-                  itemBuilder: (context, index) {
-                    return Padding(
+              // Activities List
+              ...activities
+                  .map(
+                    (activity) => Padding(
                       padding: const EdgeInsets.only(bottom: 16.0),
                       child: ActivityCard(
-                        title: activities[index]['title'],
-                        icon: activities[index]['icon'],
-                        color: activities[index]['color'],
+                        title: activity['title'],
+                        subtitle: activity['subtitle'],
+                        icon: activity['icon'],
+                        color: activity['color'],
                         onTap: () {
-                          // Check if screen is available
-                          if (activities[index]['screen'] != null) {
+                          if (activity['screen'] != null) {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) =>
-                                    activities[index]['screen'],
+                                builder: (context) => activity['screen'],
                               ),
                             );
                           } else {
-                            _showSnackBar(
-                              '${activities[index]['title']} coming soon!',
-                            );
+                            _showSnackBar('${activity['title']} coming soon!');
                           }
                         },
                       ),
-                    );
-                  },
+                    ),
+                  )
+                  .toList(),
+
+              const SizedBox(height: 24),
+
+              // Quotes Section - Expanded to fill remaining space
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Enhanced Quotes Container
+                    Expanded(
+                      child: Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              Colors.purple.shade50,
+                              Colors.purple.shade100.withOpacity(0.7),
+                              Colors.pink.shade50.withOpacity(0.5),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(24),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.purple.withOpacity(0.1),
+                              spreadRadius: 2,
+                              blurRadius: 20,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
+                        ),
+                        child: PageView.builder(
+                          controller: _pageController,
+                          onPageChanged: _onQuotePageChanged,
+                          itemCount: quotes.length,
+                          itemBuilder: (context, index) {
+                            return Padding(
+                              padding: const EdgeInsets.all(28.0),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  // Quote icon with better styling
+                                  Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: Colors.purple.shade200.withOpacity(
+                                        0.3,
+                                      ),
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: Icon(
+                                      Icons.format_quote,
+                                      size: 32,
+                                      color: Colors.purple.shade400,
+                                    ),
+                                  ),
+
+                                  // Quote text with better typography
+                                  Expanded(
+                                    child: Center(
+                                      child: Text(
+                                        quotes[index]['quote']!,
+                                        style: TextStyle(
+                                          fontSize: screenWidth * 0.055,
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.black87,
+                                          height: 1.5,
+                                          letterSpacing: 0.3,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Enhanced page indicators
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(
+                        quotes.length,
+                        (index) => AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                          margin: const EdgeInsets.symmetric(horizontal: 4),
+                          width: currentQuoteIndex == index ? 32 : 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: currentQuoteIndex == index
+                                ? Colors.purple.shade400
+                                : Colors.grey.shade300,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // Swipe hint with better styling
+                    Center(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.swipe_rounded,
+                              size: 16,
+                              color: Colors.grey[600],
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Swipe for more inspiration',
+                              style: TextStyle(
+                                color: Colors.grey[600],
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 8),
+                  ],
                 ),
               ),
             ],
@@ -400,8 +589,6 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
     );
   }
 }
-
-// Replace the ActivityCard class in activitiesScreen.dart
 
 class ActivityCard extends StatelessWidget {
   final String title;
