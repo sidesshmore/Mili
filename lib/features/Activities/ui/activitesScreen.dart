@@ -38,18 +38,6 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
       'color': Colors.purple.shade100,
       'screen': const QuotesScreen(),
     },
-    {
-      'title': 'Sounds',
-      'icon': Icons.music_note,
-      'color': Colors.green.shade100,
-      'screen': null, // You'll need to create this screen
-    },
-    {
-      'title': 'Notepad',
-      'icon': Icons.edit_note,
-      'color': Colors.orange.shade100,
-      'screen': null, // You'll need to create this screen
-    },
   ];
 
   @override

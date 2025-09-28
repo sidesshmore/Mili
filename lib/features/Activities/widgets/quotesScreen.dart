@@ -1,6 +1,5 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
+import 'package:mindmate/constants.dart';
 
 class QuotesScreen extends StatefulWidget {
   const QuotesScreen({super.key});
@@ -11,10 +10,12 @@ class QuotesScreen extends StatefulWidget {
 
 class _QuotesScreenState extends State<QuotesScreen> {
   final PageController _pageController = PageController();
+  int currentIndex = 0;
+
   final List<Map<String, String>> quotes = [
     {
       'quote':
-          'You are stronger than you know. Braver than you believe. And more capable than you can imagine.',
+          'You are stronger than you know, braver than you believe, and more capable than you can imagine.',
       'author': 'Unknown',
     },
     {
@@ -27,57 +28,250 @@ class _QuotesScreenState extends State<QuotesScreen> {
           'Your mental health is a priority. Your happiness is essential. Your self-care is a necessity.',
       'author': 'Unknown',
     },
-    // Add more quotes here
+    {
+      'quote':
+          'Healing isn\'t about erasing your past, it\'s about learning to live with it and grow beyond it.',
+      'author': 'Unknown',
+    },
+    {
+      'quote': 'Progress, not perfection. Every small step forward counts.',
+      'author': 'Unknown',
+    },
+    {
+      'quote':
+          'It\'s okay to not be okay. What\'s not okay is staying in that place forever.',
+      'author': 'Unknown',
+    },
+    {
+      'quote':
+          'You have been assigned this mountain to show others it can be moved.',
+      'author': 'Mel Robbins',
+    },
+    {
+      'quote':
+          'Mental health is not a destination, but a process. It\'s about how you drive, not where you\'re going.',
+      'author': 'Noam Shpancer',
+    },
   ];
+
+  void _onPageChanged(int index) {
+    setState(() {
+      currentIndex = index;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    Globals.initialize(context);
+
     return Scaffold(
-      backgroundColor: Colors.black,
-      body: PageView.builder(
-        controller: _pageController,
-        scrollDirection: Axis.vertical,
-        itemCount: quotes.length,
-        itemBuilder: (context, index) {
-          return Container(
-            padding: const EdgeInsets.all(20),
+      backgroundColor: Colors.grey[50],
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 2,
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back,
+            color: Globals.customBlue,
+            size: Globals.screenWidth * 0.06,
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          'Inspirational Quotes',
+          style: TextStyle(
+            fontSize: Globals.screenWidth * 0.05,
+            fontWeight: FontWeight.w600,
+            color: Globals.customBlue,
+          ),
+        ),
+        actions: [
+          Container(
+            margin: const EdgeInsets.only(right: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.purple.withOpacity(0.6),
-                  Colors.blue.withOpacity(0.6),
-                ],
+              color: Globals.customBlue.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Globals.customBlue.withOpacity(0.2)),
+            ),
+            child: Text(
+              '${currentIndex + 1}/${quotes.length}',
+              style: TextStyle(
+                color: Globals.customBlue,
+                fontSize: Globals.screenWidth * 0.035,
+                fontWeight: FontWeight.w600,
               ),
             ),
-            child: Center(
-              child: Column(
+          ),
+        ],
+      ),
+      body: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.all(Globals.screenWidth * 0.04),
+          child: Column(
+            children: [
+              // Header info
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.all(Globals.screenWidth * 0.05),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Colors.purple.shade50, Colors.blue.shade50],
+                  ),
+                  borderRadius: BorderRadius.circular(
+                    Globals.screenWidth * 0.04,
+                  ),
+                  border: Border.all(color: Colors.purple.shade100),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.format_quote,
+                          color: Colors.purple.shade400,
+                          size: Globals.screenWidth * 0.06,
+                        ),
+                        SizedBox(width: Globals.screenWidth * 0.02),
+                        Text(
+                          'Daily Inspiration',
+                          style: TextStyle(
+                            fontSize: Globals.screenWidth * 0.045,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.purple.shade700,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: Globals.screenHeight * 0.01),
+                    Text(
+                      'Swipe through uplifting quotes to brighten your day.',
+                      style: TextStyle(
+                        fontSize: Globals.screenWidth * 0.035,
+                        color: Colors.grey[700],
+                        height: 1.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              SizedBox(height: Globals.screenHeight * 0.03),
+
+              // Quotes PageView
+              Expanded(
+                child: PageView.builder(
+                  controller: _pageController,
+                  onPageChanged: _onPageChanged,
+                  itemCount: quotes.length,
+                  itemBuilder: (context, index) {
+                    return Container(
+                      margin: EdgeInsets.symmetric(
+                        horizontal: Globals.screenWidth * 0.02,
+                      ),
+                      padding: EdgeInsets.all(Globals.screenWidth * 0.08),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(
+                          Globals.screenWidth * 0.06,
+                        ),
+                        border: Border.all(color: Colors.grey.shade200),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.1),
+                            spreadRadius: 2,
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.format_quote,
+                            size: Globals.screenWidth * 0.12,
+                            color: Globals.customBlue.withOpacity(0.3),
+                          ),
+
+                          SizedBox(height: Globals.screenHeight * 0.04),
+
+                          Text(
+                            quotes[index]['quote']!,
+                            style: TextStyle(
+                              fontSize: Globals.screenWidth * 0.05,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.grey[800],
+                              height: 1.5,
+                              letterSpacing: 0.3,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+
+                          SizedBox(height: Globals.screenHeight * 0.04),
+
+                          Container(
+                            height: 1,
+                            width: Globals.screenWidth * 0.2,
+                            color: Globals.customBlue.withOpacity(0.3),
+                          ),
+
+                          SizedBox(height: Globals.screenHeight * 0.03),
+
+                          Text(
+                            '— ${quotes[index]['author']}',
+                            style: TextStyle(
+                              fontSize: Globals.screenWidth * 0.04,
+                              fontWeight: FontWeight.w500,
+                              color: Globals.customBlue,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+
+              SizedBox(height: Globals.screenHeight * 0.02),
+
+              // Page indicators
+              Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    quotes[index]['quote']!,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    '- ${quotes[index]['author']}',
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 18,
-                      fontStyle: FontStyle.italic,
+                children: List.generate(
+                  quotes.length,
+                  (index) => AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    width: currentIndex == index ? 24 : 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: currentIndex == index
+                          ? Globals.customBlue
+                          : Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(4),
                     ),
                   ),
-                ],
+                ),
               ),
-            ),
-          );
-        },
+
+              SizedBox(height: Globals.screenHeight * 0.02),
+
+              Text(
+                'Swipe left or right for more quotes',
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontSize: Globals.screenWidth * 0.035,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
