@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mindmate/constants.dart';
+import 'package:mindmate/features/Activities/widgets/affirmationsScreen.dart';
 import 'package:mindmate/features/Activities/widgets/breathingScreen.dart';
 import 'package:mindmate/features/Activities/widgets/quotesScreen.dart';
 import 'package:mindmate/services/auth_service.dart';
@@ -29,7 +30,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
       'title': 'Affirmations',
       'icon': Icons.favorite,
       'color': Colors.pink.shade100,
-      'screen': null, // You'll need to create this screen
+      'screen': const AffirmationsScreen(), // You'll need to create this screen
     },
     {
       'title': 'Quotes',
